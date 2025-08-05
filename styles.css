@@ -1,0 +1,460 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background: #f4f7fc;
+    min-height: 100vh;
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(60, 90, 150, 0.1);
+}
+
+.header-refresh {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    color: #2c5a9b;
+    margin-bottom: 25px;
+    cursor: pointer;
+    user-select: none;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.header-refresh:hover {
+    color: #1e4273;
+}
+
+h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c5a9b;
+    border-bottom: 1px solid #e0e8f5;
+    padding-bottom: 8px;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #e0e8f5;
+    margin: 1.5rem 0;
+}
+
+.search-section {
+    margin-bottom: 1.5rem;
+}
+
+.search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.db-search-input {
+    flex-grow: 1;
+}
+
+.db-search-input,
+input[type='text'],
+input[type='number'],
+input[type='month'],
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cdd5e3;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background-color: #fcfdff;
+    box-shadow: inset 0 1px 3px rgba(200, 210, 230, 0.15);
+    transition: all 0.2s ease;
+}
+
+.db-search-input:focus,
+input[type='text']:focus,
+input[type='number']:focus,
+input[type='month']:focus,
+select:focus {
+    outline: none;
+    border-color: #4a86e8;
+    background-color: #fff;
+    box-shadow: 0 0 6px rgba(74, 134, 232, 0.25);
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0.8rem;
+}
+
+.form-row label {
+    min-width: 120px;
+    font-weight: 600;
+    color: #4a5c7a;
+}
+
+.form-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.btn-primary {
+    background: #4a86e8;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #3c72c4;
+    box-shadow: 0 4px 12px rgba(74, 134, 232, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+}
+
+.batch-section {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    background-color: #f9faff;
+    border: 1px solid #e0e8f5;
+    border-radius: 8px;
+}
+
+.batch-section > label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #4a5c7a;
+    display: block;
+    margin-bottom: 0.8rem;
+}
+
+.batch-table,
+.pl-main-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.batch-table th,
+.batch-table td,
+.pl-main-table th,
+.pl-main-table td {
+    border: 1px solid #d1d9e6;
+    padding: 6px 8px;
+    text-align: center;
+    word-break: break-word;
+    font-size: 10pt;
+}
+
+.pl-main-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.pl-main-table .total-row {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+.batch-table th {
+    background-color: #eef3ff;
+    color: #4a5c7a;
+    font-weight: 600;
+}
+
+.batch-table input {
+    text-align: center;
+}
+
+.batch-table .remBatchBtn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#addBatchBtn {
+    margin-top: 0.8rem;
+}
+
+.database-list {
+    margin-top: 0.8rem;
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 0.4rem;
+    background: #f9faff;
+    border: 1px solid #e0e8f5;
+    border-radius: 6px;
+}
+
+.db-group,
+.packing-list-row {
+    background: #fff;
+    border: 1px solid #e0e8f5;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 1px 6px rgba(100, 120, 150, 0.06);
+}
+
+.db-group-header {
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+}
+
+.db-group-content {
+    padding: 12px;
+    border-top: 1px solid #e0e8f5;
+    display: none;
+}
+
+.db-batch-row {
+    padding: 6px 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+}
+
+.db-batch-row.locked {
+    color: #999;
+    text-decoration: line-through;
+}
+
+.packing-list-row {
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.available-batches-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.8rem;
+}
+
+.available-batches-table th,
+.available-batches-table td {
+    border: 1px solid #e0e8f5;
+    padding: 8px;
+    text-align: center;
+}
+
+.available-batches-table th {
+    background: #eef3ff;
+}
+
+.available-batches-table input[type="number"] {
+    width: 70px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 850px;
+    position: relative;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #333;
+}
+
+#packingListPreview {
+    font-family: Calibri, sans-serif;
+    font-size: 11pt;
+    line-height: 1.2;
+    color: #000;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.pl-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.pl-header h2 {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0;
+}
+
+.pl-header h3 {
+    font-size: 13pt;
+    text-decoration: underline;
+    margin: 0.4rem 0;
+}
+
+.pl-top-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pl-details-left,
+.pl-details-right {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 8px;
+    align-items: center;
+}
+
+.pl-details-left b,
+.pl-details-right b {
+    font-weight: bold;
+}
+
+.pl-main-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.8rem;
+}
+
+.pl-signature-section {
+    float: right;
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.pl-signature-section div {
+    margin-bottom: 0.4rem;
+}
+
+.pl-signature-section p {
+    margin-top: 40px;
+    border-top: 1px solid #555;
+    padding-top: 4px;
+}
+
+.mt-15 {
+    margin-top: 12px;
+}
+
+.mt-20 {
+    margin-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .form-row,
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .form-row label {
+        min-width: unset;
+        margin-bottom: 4px;
+    }
+
+    .pl-top-section {
+        flex-direction: column;
+    }
+}
+
+@media print {
+    #packingListPreview {
+        width: 7.67in !important;
+    }
+
+    .modal-content > .close-btn,
+    .modal-content > #previewTitle,
+    .modal-content > #savePdfBtn {
+        display: none !important;
+    }
+
+    .pl-main-table thead {
+        display: table-header-group !important;
+    }
+
+    .pl-main-table tr,
+    .pl-signature-section,
+    .pl-header,
+    .pl-top-section {
+        page-break-inside: avoid !important;
+    }
+}
