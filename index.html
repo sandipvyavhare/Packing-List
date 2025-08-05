@@ -1,121 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Packing List Generator</title>
-    <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Medigen Pharmaceuticals</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Add html2pdf.js via CDN with integrity for security -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Content Security Policy to allow CDN and inline styles -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
 </head>
 <body>
-<div class="container">
-    <div id="companyRefresh" class="header-refresh" title="Click to refresh the page">
-        QUALITY MEDIGEN PHARMACEUTICALS
+    <div class="container">
+        <h1 id="companyRefresh" class="header-refresh">QUALITY MEDIGEN PHARMACEUTICALS</h1>
+
+        <div class="search-section">
+            <h2>Saved Products & Batches</h2>
+            <div class="search-row">
+                <input type="text" id="dbSearchInput" class="db-search-input" placeholder="Search by product name or batch number">
+                <button id="dbSearchBtn" class="btn btn-primary">Search</button>
+            </div>
+            <div id="databaseList" class="database-list"></div>
+        </div>
+
+        <hr>
+
+        <div class="search-section">
+            <h2>Search Packing Lists</h2>
+            <div class="search-row">
+                <input type="text" id="plSearchInput" class="db-search-input" placeholder="Search by packing list number">
+                <button id="plSearchBtn" class="btn btn-primary">Search</button>
+            </div>
+            <div id="packingListResults" class="database-list"></div>
+        </div>
+
+        <hr>
+
+        <div id="add-edit-section">
+            <h2>Add / Edit Product & Batches</h2>
+            <form id="productBatchForm">
+                <div class="form-row">
+                    <label for="productName">Name of Product</label>
+                    <input type="text" id="productName" required>
+                </div>
+                <div class="form-row">
+                    <label for="mfgDate">MFG Date</label>
+                    <input type="month" id="mfgDate" required>
+                </div>
+                <div class="form-row">
+                    <label for="expDate">EXP Date</label>
+                    <input type="month" id="expDate" required>
+                </div>
+                <div class="form-row">
+                    <label for="quantityPerBox">Quantity per Box</label>
+                    <input type="text" id="quantityPerBox" required>
+                </div>
+                <div class="form-row">
+                    <label for="grossWeight">Gross Weight (kg/Box)</label>
+                    <input type="number" step="0.001" id="grossWeight" min="0" required>
+                </div>
+                <div class="form-row">
+                    <label for="netWeight">Net Weight (kg/Box)</label>
+                    <input type="number" step="0.001" id="netWeight" min="0" required>
+                </div>
+                <div class="form-row">
+                    <label for="shippingMarks">Shipping Marks</label>
+                    <input type="text" id="shippingMarks">
+                </div>
+                <div class="form-row">
+                    <label for="shipperSize">Shipper Size</label>
+                    <input type="text" id="shipperSize">
+                </div>
+                <div class="batch-section">
+                    <label>Batches for this Product</label>
+                    <table id="batchTable" class="batch-table">
+                        <thead>
+                            <tr>
+                                <th>Batch No.</th>
+                                <th>Box From</th>
+                                <th>Box To</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <button type="button" id="addBatchBtn" class="btn btn-primary">+ Add Batch</button>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="saveProductBtn" class="btn btn-primary">Save Product & Batches</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="display: none;">Cancel Edit</button>
+                </div>
+            </form>
+        </div>
+
+        <hr>
+
+        <div>
+            <h2>Generate Packing List (Selective Dispatch)</h2>
+            <form id="generatePLForm">
+                <div class="form-row">
+                    <label for="plProductSelect">Select Product</label>
+                    <select id="plProductSelect">
+                        <option value="">-- Select a Product --</option>
+                    </select>
+                </div>
+                <div id="availableBatchesWrap" class="mt-15"></div>
+                <div class="form-row mt-15">
+                    <label for="plDate">Packing List Date</label>
+                    <input type="date" id="plDate" required>
+                </div>
+                <div class="form-actions mt-20">
+                    <button type="submit" class="btn btn-primary">Generate & Preview</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="previewModal" class="modal">
+            <div class="modal-content">
+                <button class="close-btn">&times;</button>
+                <h2 id="previewTitle">Packing List Preview</h2>
+                <div id="packingListPreview"></div>
+                <div class="form-actions mt-20">
+                    <button id="savePdfBtn" class="btn btn-primary">Save as PDF</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <section class="search-section">
-        <h2>Saved Products &amp; Batches</h2>
-        <div class="search-row">
-            <input id="dbSearchInput" class="db-search-input" placeholder="Search product or batch..." autocomplete="off" />
-            <button id="dbSearchBtn" class="btn btn-primary" type="button">Search</button>
-        </div>
-        <div id="databaseList" class="database-list"></div>
-    </section>
-    <section class="search-section">
-        <h2>Search Packing Lists</h2>
-        <div class="search-row">
-            <input id="plSearchInput" class="db-search-input" placeholder="Search packing list no... (e.g., QMP/PL/25-26/001)" autocomplete="off" />
-            <button id="plSearchBtn" class="btn btn-primary" type="button">Search</button>
-        </div>
-        <div id="packingListResults" class="database-list"></div>
-    </section>
-    <hr />
-    <section id="add-edit-section" class="add-edit-section">
-        <h2>Add / Edit Product &amp; Batches</h2>
-        <form id="productBatchForm" class="product-form" autocomplete="off">
-            <div class="form-row">
-                <label for="productName">Name of Product</label>
-                <input id="productName" type="text" required />
-            </div>
-            <div class="form-row">
-                <label for="mfgDate">MFG Date</label>
-                <input id="mfgDate" type="month" required />
-            </div>
-            <div class="form-row">
-                <label for="expDate">EXP Date</label>
-                <input id="expDate" type="month" required />
-            </div>
-            <div class="form-row">
-                <label for="quantityPerBox">Quantity per Box</label>
-                <input id="quantityPerBox" type="text" placeholder="e.g., 20x5x10x1x10" required />
-            </div>
-            <div class="form-row">
-                <label for="grossWeight">Gross Weight (kg/Box)</label>
-                <input id="grossWeight" type="number" step="0.001" required />
-            </div>
-            <div class="form-row">
-                <label for="netWeight">Net Weight (kg/Box)</label>
-                <input id="netWeight" type="number" step="0.001" required />
-            </div>
-            <div class="form-row">
-                <label for="shippingMarks">Shipping Marks</label>
-                <input id="shippingMarks" type="text" />
-            </div>
-            <div class="form-row">
-                <label for="shipperSize">Shipper Size</label>
-                <input id="shipperSize" type="text" placeholder="e.g., 660X350X375 MM" />
-            </div>
-            <div class="batch-section">
-                <label>Batches for this Product</label>
-                <table id="batchTable" class="batch-table">
-                    <thead>
-                        <tr>
-                            <th>Batch No.</th>
-                            <th>Box From</th>
-                            <th>Box To</th>
-                            <th>Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <!-- JS renders batch rows here -->
-                    </tbody>
-                </table>
-                <button id="addBatchBtn" type="button" class="btn btn-secondary mt-15">+ Add Batch</button>
-            </div>
-            <div class="form-actions">
-                <input type="hidden" id="editProductId" />
-                <button id="saveProductBtn" type="submit" class="btn btn-primary">Save Product & Batches</button>
-                <button id="cancelEditBtn" type="button" class="btn btn-danger" style="display:none;">Cancel Edit</button>
-            </div>
-        </form>
-    </section>
-    <hr />
-    <section>
-        <h2>Generate Packing List (Selective Dispatch)</h2>
-        <form id="generatePLForm" class="generate-pl-form">
-            <div class="form-row">
-                <label for="plProductSelect">Select Product</label>
-                <select id="plProductSelect" required>
-                    <option value="">-- Select a Product --</option>
-                </select>
-            </div>
-            <div id="availableBatchesWrap" class="available-batches"></div>
-            <div class="form-actions">
-                <button id="generatePlBtn" type="submit" class="btn btn-primary">Generate & Preview</button>
-            </div>
-        </form>
-    </section>
-</div>
-<!-- Preview Modal -->
-<div id="previewModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
-    <div class="modal-content">
-        <button class="close-btn" aria-label="Close modal">&times;</button>
-        <h2 id="previewTitle">Packing List Preview</h2>
-        <div id="packingListPreview">
-            <!-- Packing list content inserted here -->
-        </div>
-        <button id="savePdfBtn" class="btn btn-primary mt-20">Save as PDF</button>
-    </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="main.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>

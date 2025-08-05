@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancelEditBtn').addEventListener('click', resetProductForm);
     document.getElementById('dbSearchBtn').addEventListener('click', () => renderProducts(document.getElementById('dbSearchInput').value.trim()));
     document.getElementById('plSearchBtn').addEventListener('click', () => renderPackingLists(document.getElementById('plSearchInput').value.trim()));
-    document.getElementById('dbSearchInput').addEventListener('keydown', e => e.key === 'Enter' && (e.preventDefault(), document.getElementById('dbSearchBtn').click()));
+    document.getElementById('dbSearchInput').addEventListener('keydown', e => e.key === 'Enter' && (e.preventDefault(), document.getElementById('plSearchBtn').click()));
     document.getElementById('plSearchInput').addEventListener('keydown', e => e.key === 'Enter' && (e.preventDefault(), document.getElementById('plSearchBtn').click()));
     document.getElementById('plProductSelect').addEventListener('change', e => showAvailableBatches(e.target.value));
     document.getElementById('generatePLForm').addEventListener('submit', e => (e.preventDefault(), generatePackingList()));
@@ -113,7 +113,9 @@ function saveProduct() {
 
 function generatePackingList() {
     const productId = document.getElementById('plProductSelect').value;
+    const plDate = document.getElementById('plDate').value;
     if (!productId) return alert('Please select a product.');
+    if (!plDate) return alert('Please select a packing list date.');
 
     const product = products.find(p => p.id === productId);
     if (!product) return alert('Product not found.');
@@ -156,7 +158,7 @@ function generatePackingList() {
     packingLists.push({
         plNo,
         productId,
-        date: new Date().toISOString(),
+        date: plDate,
         batches: plBatches.map(({ batch, pickRanges }) => ({
             batchNo: batch.batchNo,
             dispatchedSegments: pickRanges
@@ -294,7 +296,15 @@ function showAvailableBatches(productId) {
 }
 
 function showPreview(product, plBatches, plNo) {
+    console.log('showPreview called with:', { productId: product.id, plNo, batchCount: plBatches.length });
     const previewContainer = document.getElementById('packingListPreview');
+    let plDate;
+    const existingPL = packingLists.find(pl => pl.plNo === plNo);
+    if (existingPL) {
+        plDate = existingPL.date;
+    } else {
+        plDate = document.getElementById('plDate').value;
+    }
     let totalDispatchedBoxes = 0;
     let totalGrossWeight = 0;
     let totalNetWeight = 0;
@@ -325,7 +335,7 @@ function showPreview(product, plBatches, plNo) {
         </div>
         <div class="pl-top-section">
             <div class="pl-details-left">
-                <b>Date:</b><span>${new Date().toLocaleDateString('en-GB')}</span>
+                <b>Date:</b><span>${plDate ? new Date(plDate).toLocaleDateString('en-GB') : 'N/A'}</span>
                 <b>Name of Product:</b><span>${product.name}</span>
                 <b>Total Boxes:</b><span>${totalDispatchedBoxes} Boxes</span>
                 <b>Total Gross Wt.:</b><span>${totalGrossWeight.toFixed(2)} Kg</span>
@@ -357,34 +367,84 @@ function showPreview(product, plBatches, plNo) {
         </div>
         <div style="clear:both;"></div>
     `;
+    console.log('Preview content rendered:', previewContainer.innerHTML.substring(0, 200) + '...'); // Truncated for brevity
     document.getElementById('previewModal').style.display = 'block';
+    previewContainer.dataset.plNo = plNo;
+    console.log('Preview modal opened, plNo:', plNo);
 }
 
 // --- PDF Export: Fit to A4, Calibri 11pt, No Left Cut ---
 async function savePreviewAsPdf() {
     const element = document.getElementById('packingListPreview');
     const modal = document.getElementById('previewModal');
-    if (modal.style.display !== 'block' || !element.innerHTML.trim()) {
-        return alert('Preview modal must be open and contain content to save as PDF.');
+    console.log('savePreviewAsPdf called, checking modal and content...');
+    if (!modal || modal.style.display !== 'block' || !element || !element.innerHTML.trim()) {
+        console.error('Preview modal or content not found:', { modalDisplay: modal?.style.display, contentLength: element?.innerHTML.length });
+        return alert('Preview modal or content not found. Ensure the preview is open and loaded.');
     }
-    const plNo = document.querySelector('#packingListPreview').dataset.plNo || 'PackingList';
-    const sanitizedPlNo = plNo.replace(/[/\\]/g, '_'); // Replace slashes with underscores for filename
-    const originalWidth = element.style.width;
-    element.style.width = '7.67in'; // Use A4 width minus two 0.3in margins
+    const computedStyles = getComputedStyle(element);
+    if (computedStyles.visibility === 'hidden' || computedStyles.opacity === '0' || computedStyles.display === 'none') {
+        console.error('Preview element is not visible:', { visibility: computedStyles.visibility, opacity: computedStyles.opacity, display: computedStyles.display });
+        return alert('Preview content is not visible. Ensure it is fully rendered.');
+    }
+    const plNo = element.dataset.plNo || 'PackingList';
+    const sanitizedPlNo = plNo.replace(/[/\\]/g, '_');
+
+    // Ensure DOM is fully rendered
+    console.log('Waiting for DOM rendering, scrollHeight:', element.scrollHeight, 'offsetHeight:', element.offsetHeight);
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Increased to 5 seconds
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    // Temporarily set styles and ensure visibility
+    const originalStyles = {
+        width: element.style.width,
+        padding: element.style.padding,
+        margin: element.style.margin,
+        display: element.style.display,
+        position: element.style.position,
+        visibility: element.style.visibility,
+        opacity: element.style.opacity
+    };
+    element.style.width = '8.27in';
+    element.style.padding = '0';
+    element.style.margin = '0';
+    element.style.boxSizing = 'border-box';
+    element.style.display = 'block';
+    element.style.position = 'relative';
+    element.style.visibility = 'visible';
+    element.style.opacity = '1';
+    modal.style.display = 'block';
+
+    // Check if html2pdf is available
+    if (typeof html2pdf === 'undefined') {
+        console.error('html2pdf.js is not loaded. Check script inclusion or network restrictions.');
+        return alert('PDF generation failed: html2pdf.js library not found. A 403 error suggests the script is blocked. Please add it manually or adjust your CSP/network settings.');
+    }
 
     const options = {
-        margin: [0.3, 0.3, 0.3, 0.3],  // margins in inches
+        margin: 0.3,
         filename: `PackingList_${sanitizedPlNo}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 3, useCORS: true, windowHeight: element.scrollHeight },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css'] }
+        image: { type: 'jpeg', quality: 0.9 },
+        html2canvas: {
+            scale: 2, // Increased scale for better quality
+            useCORS: true,
+            logging: true
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait', putOnlyUsedFonts: true }
     };
+
     try {
-        await new Promise(r => setTimeout(r, 30));
-        await html2pdf().set(options).from(element).save();
+        console.log('Generating PDF with options:', options);
+        const pdf = await html2pdf().set(options).from(element).toPdf();
+        await pdf.save();
+        console.log('PDF generated successfully for plNo:', plNo);
+    } catch (error) {
+        console.error('PDF generation failed:', error.message, error.stack, 'Element HTML:', element.outerHTML.substring(0, 200) + '...');
+        alert('Failed to generate PDF. Check the console for details. Ensure the preview is fully loaded and visible.');
     } finally {
-        element.style.width = originalWidth || '';
+        Object.assign(element.style, originalStyles);
+        modal.style.display = originalStyles.display || 'block';
+        console.log('Restored original styles, modal display:', modal.style.display);
     }
 }
 
@@ -421,20 +481,31 @@ window.deleteProduct = (productId) => {
 window.editPackingList = (plNo) => alert('Editing existing packing lists is not yet implemented.');
 
 window.previewPackingList = (plNo) => {
+    console.log('previewPackingList called with plNo:', plNo);
     const pl = packingLists.find(p => p.plNo === plNo);
-    if (!pl) return alert('Packing list not found.');
+    if (!pl) {
+        console.error('Packing list not found for plNo:', plNo);
+        return alert('Packing list not found.');
+    }
     const product = products.find(p => p.id === pl.productId);
-    if (!product) return alert('Associated product not found.');
+    if (!product) {
+        console.error('Associated product not found for productId:', pl.productId);
+        return alert('Associated product not found.');
+    }
     const plBatches = pl.batches.map(b => ({
         batch: product.batches.find(pb => pb.batchNo === b.batchNo),
         pickRanges: b.dispatchedSegments
     }));
-    document.getElementById('packingListPreview').dataset.plNo = pl.plNo; // Store plNo for PDF filename
+    document.getElementById('packingListPreview').dataset.plNo = pl.plNo;
     showPreview(product, plBatches, pl.plNo);
 };
 
-window.savePackingListAsPdf = (plNo) => {
+window.savePackingListAsPdf = async (plNo) => {
+    console.log('savePackingListAsPdf called with plNo:', plNo);
     window.previewPackingList(plNo);
+    // Wait for preview to render
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await savePreviewAsPdf();
 };
 
 window.deletePackingList = (plNo) => {
@@ -461,12 +532,14 @@ function saveAllData() {
     localStorage.setItem(STORAGE_PRODUCTS, JSON.stringify(products));
     localStorage.setItem(STORAGE_PACKING_LISTS, JSON.stringify(packingLists));
 }
+
 function generateFinancialYear() {
     const d = new Date();
     const year = d.getFullYear();
     const month = d.getMonth() + 1;
     return month >= 4 ? `${String(year).slice(-2)}-${String(year + 1).slice(-2)}` : `${String(year - 1).slice(-2)}-${String(year).slice(-2)}`;
 }
+
 function generateNextPLNumber() {
     const finYear = generateFinancialYear();
     const key = `${STORAGE_PL_SEQ}${finYear}`;
@@ -474,18 +547,23 @@ function generateNextPLNumber() {
     localStorage.setItem(key, nextSeq);
     return `QMP/PL/${finYear}/${String(nextSeq).padStart(3, '0')}`;
 }
+
 function isBatchDuplicate(batchNo, excludeProductId) {
     return products.some(p => p.id !== excludeProductId && p.batches.some(b => b.batchNo.toLowerCase() === batchNo.toLowerCase()));
 }
+
 function getDispatchedCount(batch) {
     return (batch.dispatched || []).reduce((acc, d) => acc + (Number(d.to) - Number(d.from) + 1), 0);
 }
+
 function getTotalBoxes(batch) {
     return Number(batch.boxTo) - Number(batch.boxFrom) + 1;
 }
+
 function isBatchFullyDispatched(batch) {
     return getDispatchedCount(batch) >= getTotalBoxes(batch);
 }
+
 function getAvailableRanges(batch) {
     const dispatchedBoxes = new Set();
     (batch.dispatched || []).forEach(d => {
@@ -506,6 +584,7 @@ function getAvailableRanges(batch) {
     if (start !== null) ranges.push({ from: start, to: Number(batch.boxTo) });
     return ranges;
 }
+
 function formatMMMYYYY(dateString) {
     if (!dateString) return '';
     const [year, month] = dateString.split('-');

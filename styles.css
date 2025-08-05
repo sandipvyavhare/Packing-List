@@ -65,6 +65,7 @@ hr {
 input[type='text'],
 input[type='number'],
 input[type='month'],
+input[type='date'],
 select {
     width: 100%;
     padding: 10px 12px;
@@ -80,6 +81,7 @@ select {
 input[type='text']:focus,
 input[type='number']:focus,
 input[type='month']:focus,
+input[type='date']:focus,
 select:focus {
     outline: none;
     border-color: #4a86e8;
@@ -339,7 +341,7 @@ select:focus {
 }
 
 #packingListPreview {
-    font-family: Calibri, sans-serif;
+    font-family: Calibri, Arial, sans-serif;
     font-size: 11pt;
     line-height: 1.2;
     color: #000;
